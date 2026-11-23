@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Record Manager</title>
+<style>
+:root{--bg:#172554;--card:#1e3a8a;--text:#F59E0B;--title:#a5a3f0;--btn:#2563EB;--btnh:#1D4ED8;--line:#3B82F6;--ink:#fff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;scroll-behavior:smooth}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+main{max-width:900px;margin:0 auto;padding:24px 16px 48px}
+h1{color:var(--title);font-size:clamp(30px,6vw,50px);margin:0 0 6px}
+.note{font-size:13px;color:#cbd5e1;margin:0 0 20px}
+label{display:block;margin:14px 0 6px;font-size:14px}
+input,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #334155;background:#0f1b45;color:var(--ink);font-size:15px;transition:all .3s ease}
+input:focus,select:focus{outline:none;border:2px solid var(--line);box-shadow:0 0 10px rgba(59,130,246,.5)}
+button{margin-top:18px;background:var(--btn);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(34,54,123,.4);transition:all .3s ease}
+button:hover{background:var(--btnh);transform:translateY(-2px);box-shadow:0 6px 16px rgba(56,78,200,.8)}
+button:active{transform:scale(.96)}
+.panel{margin-top:18px}
+.msg{margin-top:16px;padding:12px 14px;border-radius:8px;font-size:14px}
+.ok{background:#064e3b;color:#a7f3d0}.err{background:#7f1d1d;color:#fecaca}.info{background:#1e3a8a;color:#bfdbfe}.warn{background:#78350f;color:#fde68a}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid #1e40af}
+th{background:#0f1b45;color:var(--ink)}td{color:#e2e8f0}
+.row{display:flex;gap:10px;align-items:center;margin-top:14px}
+.row input{width:auto}
+</style>
+</head>
+<body>
+<main>
+<h1>Student Record Manager</h1>
+<p class="note">Prototype demo. Records are saved in your browser only. The full app uses Streamlit and MySQL (see the GitHub repo).</p>
+<label for="ch">Choose an option</label>
+<select id="ch"><option>Add student</option><option>View students</option><option>Update student</option><option>Remove student</option></select>
+<div id="view" class="panel"></div>
+<div id="msg"></div>
+</main>
+<script>
+const GRADES=["A+","A","B+","B","C+","C","D","F"];
+let data=[];
+try{data=JSON.parse(localStorage.getItem("srm")||"[]")}catch(e){}
+if(!data.length){data=[{name:"Aarav Sharma",id:101,grade:"A",cgpa:8.7},{name:"Priya Verma",id:102,grade:"B+",cgpa:7.9}]}
+const save=()=>{try{localStorage.setItem("srm",JSON.stringify(data))}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const say=(t,k)=>{$("msg").innerHTML=t?`<div class="msg ${k}">${esc(t)}</div>`:""};
+const gradeOpts=()=>GRADES.map(g=>`<option>${g}</option>`).join("");
+const idOpts=()=>data.map(s=>`<option>${s.id}</option>`).join("");
+const table=rows=>`<div class="wrap"><table><tr><th>Name</th><th>Student ID</th><th>Grade</th><th>CGPA</th></tr>${rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${s.id}</td><td>${s.grade}</td><td>${s.cgpa.toFixed(1)}</td></tr>`).join("")}</table></div>`;
+
+function render(){
+  say("");
+  const ch=$("ch").value,v=$("view");
+  if(ch==="Add student"){
+    v.innerHTML=`<label>Enter name of student:</label><input id="n"><label>Enter id of student:</label><input id="i" type="number" min="1" step="1"><label>Choose Grade</label><select id="g">${gradeOpts()}</select><label>Enter CGPA:</label><input id="c" type="number" min="0" max="10" step="0.1" value="0"><button id="go">Add Student</button>`;
+    $("go").onclick=()=>{
+      const name=$("n").value.trim(),id=parseInt($("i").value),cgpa=parseFloat($("c").value);
+      if(!name)return say("Enter student’s name","info");
+      if(!id||id<1)return say("Enter a valid student ID","info");
+      if(isNaN(cgpa)||cgpa<0||cgpa>10)return say("CGPA must be between 0 and 10","err");
+      if(data.some(s=>s.id===id))return say("This Student ID already exists","err");
+      data.push({name,id,grade:$("g").value,cgpa});save();say("Student Added","ok");
+    };
+  }else if(ch==="View students"){
+    v.innerHTML=`<h2>All Student Records</h2>`+(data.length?table(data):"");
+    if(!data.length)say("No student records available.","info");
+  }else if(!data.length){
+    v.innerHTML="";say(ch==="Update student"?"No student record found":"No student record was found","info");
+  }else if(ch==="Update student"){
+    v.innerHTML=`<label>Select Student ID</label><select id="sid">${idOpts()}</select><label>Choose the data you want to change</label><select id="f"><option>Name</option><option>Grade</option><option>CGPA</option></select><div id="nv"></div><button id="go">Update Student</button>`;
+    const field=()=>{const f=$("f").value;$("nv").innerHTML=f==="Name"?`<label>Enter new Name:</label><input id="val">`:f==="Grade"?`<label>Choose New Grade</label><select id="val">${gradeOpts()}</select>`:`<label>Enter new CGPA</label><input id="val" type="number" min="0" max="10" step="0.1" value="0">`};
+    field();$("f").onchange=field;
+    $("go").onclick=()=>{
+      const s=data.find(x=>x.id==$("sid").value),f=$("f").value,val=$("val").value;
+      if(f==="Name"){if(!val.trim())return say("Enter new value","info");s.name=val.trim()}
+      else if(f==="Grade")s.grade=val;
+      else{const c=parseFloat(val);if(isNaN(c)||c<0||c>10)return say("CGPA must be between 0 and 10","err");s.cgpa=c}
+      save();say("Student detail updated successfully!","ok");
+    };
+  }else{
+    v.innerHTML=`<label>Select Student ID</label><select id="sid">${idOpts()}</select><div id="det"></div><div class="row"><input type="checkbox" id="cf"><span>Are you sure you want to remove this student?</span></div><button id="go">Remove Student</button>`;
+    const det=()=>{$("det").innerHTML=table(data.filter(x=>x.id==$("sid").value))};det();$("sid").onchange=det;
+    $("go").onclick=()=>{
+      if(!$("cf").checked)return say("Please confirm before removing the student","warn");
+      data=data.filter(x=>x.id!=$("sid").value);save();render();say("Student Removed","ok");
+    };
+  }
+}
+$("ch").onchange=render;render();
+</script>
+</body>
+</html>
