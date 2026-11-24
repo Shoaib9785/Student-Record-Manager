@@ -136,6 +136,7 @@ elif ch=="Update student":
                       if new_value.strip():
                             cursor.execute("UPDATE student_managers SET name=%s WHERE students_id=%s",(new_value.strip(), int(students_id)))
                             st.success("Students detail Updated successfully!")
+                            conn.commit()
                       else:
                              st.info("Enter new value")      
                elif s=="Grade":
