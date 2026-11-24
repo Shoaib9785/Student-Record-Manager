@@ -4,7 +4,7 @@ import time
 import os
 import pymysql as p
 
-conn=p.connect(host=st.secrets["host"],port=int(st.secrets["port"]),user=st.secrets["user"],password=st.secrets["password"],database=st.secrets["database"])
+conn=p.connect(host="localhost",password="10062007",user="root",database='w')
 
 st.set_page_config(
     page_title="Student Record Manager",
@@ -13,62 +13,66 @@ st.set_page_config(
     initial_sidebar_state="expanded")
 st.markdown("""
 <style>
-[data-testid="stApp"] {
-    background-color: #172554;
+.stApp{   
+     background-color: #172554;
     color: #F59E0B;
     font-family: Arial, sans-serif;
 }
-[data-testid="stHeading"] h1 {
-    color: #6764b9;
-    font-size: 50px;
+h1{
+   color: #6764b9;
+   font-size: 50px;    
 }
-
-/* Buttons */
-[data-testid="stButton"] button,
-[data-testid="stFormSubmitButton"] button {
-    background-color: #2563EB;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0px 4px 12px rgba(34, 54, 123, 0.4);
-    transition: all 0.3s ease;
+       }
+/* Main Add Student Button/*
+.stButton > button,
+.stFormSubmitButton > button {
+       background-color: #2563EB;
+       color: white;
+       border: none;
+       border-radius: 10px;
+       padding: 10px 24px;
+       font-size: 16px;
+       font-weight: bold;
+       box-shadow: 0px 4px 12px rgba(34,54,123,0.4)
+       transition: all 0.3s ease;
+/* Button hover effect */
+.stButton > button:hover,
+.stFormSubmitForm > button:hover {
+       background: #1D4ED8;
+       color: white;
+       transform: translateY(-2px);
+       box-shadow: 0px 6px 16px rgba(56,78,321,.8)
 }
-[data-testid="stButton"] button:hover,
-[data-testid="stFormSubmitButton"] button:hover {
-    background: #1D4ED8;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0px 6px 16px rgba(56, 78, 200, 0.8);
-}
-[data-testid="stButton"] button:active,
-[data-testid="stFormSubmitButton"] button:active {
+/* Button click effect */
+.stButton > button:active,
+.stFormSubmitButton > button:active {
     transform: scale(0.96);
-}
-
-/* Inputs */
-[data-testid="stTextInput"] [data-baseweb="input"]:focus-within {
+/* Input focus effect */
+.stTextInput input:focus {
     border: 2px solid #3B82F6;
     box-shadow: 0px 0px 10px rgba(59, 130, 246, 0.5);
-}
-[data-testid="stNumberInput"] [data-baseweb="input"] {
+/* Number input */
+.stNumberInput input {
     border-radius: 8px;
 }
-[data-testid="stSelectbox"] [data-baseweb="select"] {
+/* Select boxes */
+.stSelectbox [data-baseweb="select"] {
     border-radius: 8px;
     transition: all 0.3s ease;
 }
 
-/* Table */
-[data-testid="stDataFrame"] {
+/* Dataframe */
+.stDataFrame {
     border: 1px solid #3B82F6;
     border-radius: 10px;
 }
 
-* { scroll-behavior: smooth; }
-</style>""", unsafe_allow_html=True)
+/* Smooth animation */
+* {
+    scroll-behavior: smooth;
+}
+
+       </style>""", unsafe_allow_html=True)
 st.title("Student Record Manager")
 
 ch=st.selectbox("Choose an option",["Add student","View students","Update student","Remove student"])
